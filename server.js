@@ -9,17 +9,18 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 
-// Middleware
-app.use(cors({
+const corsOptions = {
   origin: [
+    "https://the-project-smile.vercel.app",
+    "https://project-smile.in",
     "http://localhost:3000",
-    "http://localhost:5173",
-    "https://the-project-smile-rb5scf2pk-sandhya-kumaris-projects-00728b30.vercel.app/",
-    "https://project-smile.in" // 👈 apna real domain yaha daalna
+    "http://localhost:5173"
   ],
+  methods: ["GET", "POST"],
   credentials: true
-}));
+};
 
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Gmail transporter configuration
