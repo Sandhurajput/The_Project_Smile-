@@ -8,15 +8,25 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "https://the-project-smile-rb5scf2pk-sandhya-kumaris-projects-00728b30.vercel.app/",
+    "https://project-smile.in" // 👈 apna real domain yaha daalna
+  ],
+  credentials: true
+}));
+
 app.use(express.json());
 
 // Gmail transporter configuration
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER || 'muskanperween24@navgurukul.org',
+    user: process.env.EMAIL_USER ,
     pass: process.env.EMAIL_PASS || 'your-app-password' // Gmail App Password required
   }
 });
@@ -28,8 +38,8 @@ app.post('/send-email', async (req, res) => {
   console.log('📧 Email request received:', { name, email, phone });
 
   const mailOptions = {
-    from: process.env.EMAIL_USER || 'muskanperween24@navgurukul.org',
-    to: 'muskanperween24@navgurukul.org',
+    from: process.env.EMAIL_USER ,
+    to: process.env.EMAIL_USER,
     subject: `🔔 New Contact Form Submission - ${name}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

@@ -12,105 +12,74 @@ const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState("");
 
-  // Web3Forms Configuration
-  const WEB3FORMS_ACCESS_KEY = "7a538f0b-1046-4564-b673-806ca0e94836";
-
-  const sendWeb3FormsEmail = async (formData) => {
-    try {
-      console.log('📧 Sending email via Web3Forms...');
-      
-      const web3FormData = new FormData();
-      web3FormData.append("access_key", WEB3FORMS_ACCESS_KEY);
-      web3FormData.append("name", formData.name);
-      web3FormData.append("email", formData.email);
-      web3FormData.append("phone", formData.phone || 'Not provided');
-      web3FormData.append("message", formData.message);
-      web3FormData.append("subject", `New Contact Form Submission from ${formData.name}`);
-      web3FormData.append("from_name", "The Project Smile Website");
-      web3FormData.append("to_email", "muskanperween24@navgurukul.org");
-
-      const response = await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        body: web3FormData
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        console.log('✅ Email sent successfully via Web3Forms');
-        return { success: true };
-      } else {
-        console.error('❌ Web3Forms email sending failed:', result);
-        return { success: false, error: result.message || 'Failed to send email' };
-      }
-    } catch (error) {
-      console.error('❌ Web3Forms API request failed:', error);
-      return { success: false, error: `API Error: ${error.message}` };
-    }
-  };
-
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
-  };
+  const { name, value } = e.target;
+
+  setFormData((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+};
+
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setSubmitResult("Sending message...");
-    
-    // Validate form
-    if (!formData.name || !formData.email || !formData.message) {
-      setSubmitResult("Please fill in all required fields.");
-      setIsSubmitting(false);
-      return;
-    }
-    
-    try {
-      console.log('📝 Submitting form data:', formData);
-      
-      // Save to Firebase first
-      const firebaseResult = await saveContactForm(formData);
-      
-      if (firebaseResult.success) {
-        console.log('✅ Data saved to Firebase');
-        
-        // Send email notification via Web3Forms
-        const emailResult = await sendWeb3FormsEmail(formData);
-        
-        if (emailResult.success) {
-          setSubmitResult("✅ Message sent successfully! We will get back to you soon.");
-          
-          // Reset form after successful submission
-          setTimeout(() => {
-            setFormData({
-              name: '',
-              email: '',
-              phone: '',
-              message: ''
-            });
-            setSubmitResult("");
-          }, 3000);
-          
-        } else {
-          setSubmitResult("✅ Message saved! We received your message and will contact you soon.");
-          console.log('Email may have failed but Firebase saved the data');
-        }
-      } else {
-        setSubmitResult("❌ Failed to send message. Please try again.");
-        console.error('Firebase save failed:', firebaseResult.error);
-      }
-    } catch (error) {
-      console.error('❌ Error submitting form:', error);
-      setSubmitResult("❌ Error sending message. Please try again.");
-    }
-    
-    setIsSubmitting(false);
-  };
+  e.preventDefault();
+  setIsSubmitting(true);
+  setSubmitResult("Sending message...");
 
+  // Validate form
+  if (!formData.name || !formData.email || !formData.message) {
+    setSubmitResult("Please fill in all required fields.");
+    setIsSubmitting(false);
+    return;
+  }
+
+  try {
+    console.log("📝 Submitting form:", formData);
+
+    // Save data to Firebase
+    const firebaseResult = await saveContactForm(formData);
+
+    if (!firebaseResult.success) {
+      throw new Error(firebaseResult.error || "Failed to save to Firebase");
+    }
+
+    console.log("✅ Data saved to Firebase");
+
+    // Send email using Render backend
+    const response = await fetch(
+      "https://the-project-smile.onrender.com/send-email",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      }
+    );
+
+    const emailResult = await response.json();
+
+    if (!response.ok || !emailResult.success) {
+      throw new Error(emailResult.message || "Email sending failed");
+    }
+
+    setSubmitResult("✅ Message sent successfully! We will get back to you soon.");
+
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      message: "",
+    });
+
+  } catch (error) {
+    console.error(error);
+    setSubmitResult("❌ Failed to send message. Please try again.");
+  }
+
+  setIsSubmitting(false);
+};
   return (
     <div className="contact-page">
       <div className="contact-container">
