@@ -46,23 +46,27 @@ const Contact = () => {
 
     console.log("✅ Data saved to Firebase");
 
-    // Send email using Render backend
-    const response = await fetch(
-      "https://the-project-smile.onrender.com/send-email",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      }
-    );
 
-    const emailResult = await response.json();
+const response = await fetch("https://api.web3forms.com/submit", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    access_key: "bb9f3a18-03ab-4ffb-ae4a-86b31dd4ad65",
+    name: formData.name,
+    email: formData.email,
+    phone: formData.phone,
+    message: formData.message,
+  }),
+});
 
-    if (!response.ok || !emailResult.success) {
-      throw new Error(emailResult.message || "Email sending failed");
-    }
+const emailResult = await response.json();
+
+if (!emailResult.success) {
+  throw new Error("Email sending failed");
+}
+
 
     setSubmitResult("✅ Message sent successfully! We will get back to you soon.");
 

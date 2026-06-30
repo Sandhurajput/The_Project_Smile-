@@ -1,5 +1,5 @@
 import express from 'express';
-import nodemailer from 'nodemailer';
+// import nodemailer from 'nodemailer';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
@@ -21,22 +21,11 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+
+app.options("/send-email", cors(corsOptions));
+
 app.use(express.json());
 
-// Gmail transporter configuration
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER ,
-    pass: process.env.EMAIL_PASS || 'your-app-password' // Gmail App Password required
-  }
-});
-
-// Email sending endpoint
-app.post('/send-email', async (req, res) => {
-  const { name, email, phone, message } = req.body;
-  
-  console.log('📧 Email request received:', { name, email, phone });
 
   const mailOptions = {
     from: process.env.EMAIL_USER ,
