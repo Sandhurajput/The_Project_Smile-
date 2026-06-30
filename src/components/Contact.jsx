@@ -54,6 +54,9 @@ const response = await fetch("https://api.web3forms.com/submit", {
   },
   body: JSON.stringify({
     access_key: "bb9f3a18-03ab-4ffb-ae4a-86b31dd4ad65",
+    subject: "New Contact Form - The Project Smile",
+    from_name: "The Project Smile Website",
+
     name: formData.name,
     email: formData.email,
     phone: formData.phone,
@@ -66,7 +69,6 @@ const emailResult = await response.json();
 if (!emailResult.success) {
   throw new Error("Email sending failed");
 }
-
 
     setSubmitResult("✅ Message sent successfully! We will get back to you soon.");
 
